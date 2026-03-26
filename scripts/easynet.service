@@ -1,0 +1,35 @@
+[Unit]
+Description=EasyNet - Network censorship bypass research tool
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/env python3 -m easynet.cli.main run --socks5 --no-transparent --no-web
+ExecStop=/bin/kill -SIGTERM $MAINPID
+
+# Configuration
+Environment=EASYNET_CONFIG=/etc/easynet/config.yaml
+
+# Security hardening
+ProtectSystem=strict
+ReadWritePaths=/var/lib/easynet /var/log/easynet
+PrivateTmp=true
+NoNewPrivileges=false
+# Raw sockets require capabilities
+AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+
+# Restart policy
+Restart=on-failure
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=easynet
+
+[Install]
+WantedBy=multi-user.target

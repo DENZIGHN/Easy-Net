@@ -1,0 +1,130 @@
+# EasyNet - Default Configuration
+# Network censorship bypass research tool
+
+# General settings
+general:
+  log_level: INFO          # DEBUG, INFO, WARNING, ERROR
+  log_file: easynet.log
+  data_dir: ~/.easynet
+
+# DNS resolution settings
+dns:
+  # DNS-over-HTTPS providers
+  doh:
+    enabled: true
+    providers:
+      - name: cloudflare
+        url: https://cloudflare-dns.com/dns-query
+        priority: 1
+      - name: google
+        url: https://dns.google/dns-query
+        priority: 2
+      - name: quad9
+        url: https://dns.quad9.net:5053/dns-query
+        priority: 3
+    timeout: 5.0
+    cache_ttl: 300
+
+  # DNS-over-TLS fallback
+  dot:
+    enabled: true
+    servers:
+      - host: 1.1.1.1
+        port: 853
+      - host: 8.8.8.8
+        port: 853
+      - host: 9.9.9.9
+        port: 853
+    timeout: 5.0
+
+  # System DNS (used for comparison in block detection)
+  system:
+    servers:
+      - 8.8.8.8
+      - 1.1.1.1
+
+# DPI bypass methods
+bypass:
+  # TCP fragmentation of TLS ClientHello
+  fragmentation:
+    enabled: true
+    fragment_size: 2       # bytes per fragment for SNI split
+    strategy: sni_split    # sni_split, fixed_size, random
+
+  # HTTP Host header manipulation
+  host_manipulation:
+    enabled: true
+    methods:
+      - case_randomize      # e.g., Host: ExAmPle.CoM
+      - space_prefix        # e.g., Host:  example.com (extra space)
+      - tab_insert          # e.g., Host:\texample.com
+      - dot_trailing        # e.g., Host: example.com.
+
+  # TTL-based desync (fake RST with low TTL)
+  ttl_desync:
+    enabled: true
+    fake_ttl: 1            # TTL for fake packets (dies before reaching server)
+    real_ttl: 64           # TTL for real packets
+
+  # TCP desynchronization
+  tcp_desync:
+    enabled: true
+    method: fake_syn       # fake_syn, split, disorder
+
+# Proxy settings
+proxy:
+  # SOCKS5 proxy
+  socks5:
+    enabled: true
+    host: 127.0.0.1
+    port: 1080
+    auth:
+      enabled: false
+      username: ""
+      password: ""
+
+  # Transparent proxy (requires root/admin on Linux)
+  transparent:
+    enabled: false
+    port: 8080
+    # iptables rules are managed automatically
+
+  # Split tunneling
+  split_tunnel:
+    enabled: true
+    mode: blocklist        # blocklist (bypass only blocked) or allowlist
+
+# Smart routing
+routing:
+  # Block detection
+  detection:
+    enabled: true
+    methods:
+      - dns_comparison      # Compare system DNS vs DoH responses
+      - ttl_analysis        # Detect injected RST packets via TTL
+      - timeout_detection   # Detect connection timeouts to known-good sites
+    check_interval: 3600   # Re-check every hour
+
+  # Domain lists
+  blocklist:
+    local_file: ~/.easynet/blocklist.txt
+    # Community sources (URLs to fetch blocklists from)
+    community_sources: []
+    update_interval: 86400 # Update daily
+
+  # Method selection per domain
+  auto_select:
+    enabled: true
+    test_timeout: 10.0
+    # Priority order for trying bypass methods
+    priority:
+      - fragmentation
+      - host_manipulation
+      - ttl_desync
+      - tcp_desync
+
+# Web UI (optional)
+web:
+  enabled: false
+  host: 127.0.0.1
+  port: 8888
