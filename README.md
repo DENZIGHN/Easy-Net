@@ -55,6 +55,54 @@ source .venv/bin/activate
 pip install -e ".[dev,web]"
 ```
 
+## Building Portable Executable
+
+Build a single-file portable binary (no Python installation required on target):
+
+```bash
+# Install build dependencies
+pip install -e ".[build]"
+
+# Build using the build script
+python scripts/build_exe.py
+
+# Or build with cleanup of previous artifacts
+python scripts/build_exe.py --clean
+
+# Build as a directory (faster startup, larger on disk)
+python scripts/build_exe.py --onedir
+
+# Build with debug output
+python scripts/build_exe.py --debug
+```
+
+The executable is placed in `dist/easynet` (Linux/macOS) or `dist/easynet.exe` (Windows).
+
+```bash
+# Run the portable binary
+./dist/easynet --help
+./dist/easynet run
+./dist/easynet check example.com
+
+# With a custom config file alongside the binary
+./dist/easynet -c /path/to/config.yaml run
+```
+
+You can also build directly with PyInstaller:
+
+```bash
+pip install pyinstaller>=6.0
+pyinstaller easynet.spec
+```
+
+### Cross-platform notes
+
+- **Linux**: Build on Linux to get a Linux binary
+- **Windows**: Build on Windows to get a `.exe`. Requires Python 3.11+ for Windows installed
+- **macOS**: Build on macOS to get a macOS binary
+
+PyInstaller does not support cross-compilation; build on the target platform.
+
 ## Quick Start
 
 ### Start the SOCKS5 proxy

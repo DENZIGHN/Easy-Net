@@ -12,3 +12,7 @@ venv/
 .ruff_cache/
 *.log
 .mypy_cache/
+# PyInstaller
+*.spec.bak
+*.manifest
+*.exe

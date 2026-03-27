@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -10,7 +11,15 @@ from typing import Any
 import yaml
 
 
-DEFAULT_CONFIG_PATH = Path(__file__).parent.parent.parent / "config" / "default.yaml"
+def _get_base_dir() -> Path:
+    """Get the base directory, handling both normal and PyInstaller frozen modes."""
+    if getattr(sys, "frozen", False):
+        # Running as PyInstaller bundle — _MEIPASS is the temp extraction dir
+        return Path(sys._MEIPASS)  # type: ignore[attr-defined]
+    return Path(__file__).parent.parent.parent
+
+
+DEFAULT_CONFIG_PATH = _get_base_dir() / "config" / "default.yaml"
 
 
 @dataclass
