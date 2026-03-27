@@ -19,7 +19,13 @@ PROJECT_ROOT = os.path.abspath(".")
 CONFIG_DIR = os.path.join(PROJECT_ROOT, "config")
 
 a = Analysis(
-    [os.path.join("easynet", "__main__.py")],
+    [
+        os.path.join("easynet", "__main__.py"),
+        # This file has explicit top-level imports of all dependencies,
+        # so PyInstaller's static analysis can trace them even though
+        # __main__.py uses lazy imports inside functions.
+        os.path.join("easynet", "_frozen_imports.py"),
+    ],
     pathex=[PROJECT_ROOT],
     binaries=[],
     datas=[
@@ -121,7 +127,7 @@ a = Analysis(
         "easynet.utils.logging",
         "easynet.utils.platform",
     ],
-    hookspath=[],
+    hookspath=[os.path.join(PROJECT_ROOT, "scripts")],
     hooksconfig={},
     runtime_hooks=[
         os.path.join("scripts", "pyinstaller_runtime_hook.py"),
