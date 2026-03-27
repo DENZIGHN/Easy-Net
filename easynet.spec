@@ -27,25 +27,79 @@ a = Analysis(
         (os.path.join("config", "default.yaml"), "config"),
     ],
     hiddenimports=[
-        # Scapy layers needed at runtime (loaded dynamically)
-        "scapy.layers.inet",
-        "scapy.layers.l2",
-        "scapy.layers.dns",
-        # aiohttp internal modules
-        "aiohttp._http_parser",
-        "aiohttp._helpers",
-        "aiohttp._websocket",
-        # dnspython
+        # NOTE: scapy is a declared dependency but not imported at runtime.
+        # All packet crafting uses struct+socket directly.
+        # --- aiohttp ---
+        "aiohttp",
+        "aiohttp.web",
+        "aiohttp.web_app",
+        "aiohttp.web_request",
+        "aiohttp.web_response",
+        "aiohttp.web_runner",
+        "aiohttp.web_server",
+        "aiohttp.client",
+        "aiohttp.connector",
+        "aiohttp.resolver",
+        # --- multidict (aiohttp dependency, C extension) ---
+        "multidict",
+        "multidict._multidict",
+        # --- yarl (aiohttp dependency) ---
+        "yarl",
+        "yarl._quoting",
+        # --- frozenlist (aiohttp dependency) ---
+        "frozenlist",
+        "frozenlist._frozenlist",
+        # --- aiosignal ---
+        "aiosignal",
+        # --- dnspython ---
+        "dns",
+        "dns.asyncresolver",
+        "dns.message",
+        "dns.query",
+        "dns.rdatatype",
+        "dns.rdtypes",
         "dns.rdtypes.ANY",
+        "dns.rdtypes.ANY.SOA",
+        "dns.rdtypes.ANY.TXT",
+        "dns.rdtypes.ANY.MX",
+        "dns.rdtypes.ANY.NS",
+        "dns.rdtypes.ANY.CNAME",
+        "dns.rdtypes.ANY.PTR",
         "dns.rdtypes.IN",
         "dns.rdtypes.IN.A",
         "dns.rdtypes.IN.AAAA",
-        # Click completion
+        "dns.rdtypes.IN.SRV",
+        # --- Click ---
+        "click",
+        "click.core",
+        "click.decorators",
+        "click.exceptions",
         "click.shell_completion",
-        # Rich
+        # --- Rich ---
+        "rich",
+        "rich.console",
+        "rich.table",
+        "rich.text",
         "rich.traceback",
-        # EasyNet submodules
+        "rich.markup",
+        # --- PyYAML ---
+        "yaml",
+        "_yaml",
+        # --- stdlib that PyInstaller sometimes misses ---
+        "asyncio",
+        "asyncio.events",
+        "asyncio.base_events",
+        "asyncio.selector_events",
+        "asyncio.proactor_events",
+        "ssl",
+        "struct",
+        "socket",
+        "ipaddress",
+        "email.mime.text",
+        # --- EasyNet submodules ---
+        "easynet",
         "easynet.core",
+        "easynet.core.base",
         "easynet.core.engine",
         "easynet.core.fragmentation",
         "easynet.core.host_manipulation",
@@ -69,7 +123,9 @@ a = Analysis(
     ],
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=[
+        os.path.join("scripts", "pyinstaller_runtime_hook.py"),
+    ],
     excludes=[
         # Exclude heavy unused packages to reduce binary size
         "tkinter",
@@ -84,6 +140,12 @@ a = Analysis(
         "unittest",
         "pytest",
         "cryptography",
+        # Scapy is not imported at runtime (we use struct+socket directly)
+        # Excluding it avoids cryptography pyo3 issues
+        "scapy",
+        "scapy.all",
+        "scapy.config",
+        "scapy.layers",
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
